@@ -1,0 +1,11 @@
+{
+    "account_id": "[your monzo account ID from Monzo portal]",
+    "client_id": "[your monzo client client ID]",
+    "owner_id": "[your monzo client owner ID]",
+    "client_secret": "[your monzo client client secret]",
+    "redirect_url": "http://127.0.0.1/monzo",
+    "authorisation_url": "[your authorisation url, generated in auth_0.py]",
+    "access_token": "[your access token, generated after auth_1.py]",
+    "token_expiry": "[your token's expiry timestamp]",
+    "refresh_token": "[your refresh token, generated after auth_1.py]"
+}

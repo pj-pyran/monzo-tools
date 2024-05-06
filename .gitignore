@@ -1,7 +1,7 @@
 *.csv
 *.txt
-*.json
 *.ipynb
 *.xlsx
 data/
 archive/
+__pycache__/
