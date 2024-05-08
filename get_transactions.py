@@ -1,19 +1,24 @@
-from creds import creds
+from creds import get_creds, refresh_token
 from datetime import datetime
+import logging
 import pandas as pd
 import requests
 from format_transactions import format_transactions, format_new_transactions
 from requests.exceptions import HTTPError, ConnectionError, Timeout, RequestException
 
-CREDS = creds()
+CREDS = get_creds()
 PATH_TRANSACTIONS = 'data/transactions_all.csv'
 # Set up API endpoint and access token
 endpoint = 'https://api.monzo.com/transactions'
 access_token = CREDS['access_token']
 token_expiry = datetime.fromtimestamp(CREDS['token_expiry'])
-# if token_expiry < datetime.now():
-#     raise Exception('Token expired. Get a new token first.')
-print(f'Token expires {token_expiry}')
+logging.info(f'Token expires {token_expiry}')
+if token_expiry < datetime.now():
+    logging.info(' Token expired: refreshing token...')
+    refresh_token()
+    CREDS = get_creds()
+    token_expiry = datetime.fromtimestamp(CREDS['token_expiry'])
+    logging.info(f'Token refreshed. New token expires {token_expiry}')
 
 
 def call_endpoint(id_start_: str, creds: dict = CREDS) -> dict:
@@ -29,16 +34,16 @@ def call_endpoint(id_start_: str, creds: dict = CREDS) -> dict:
         )
         response.raise_for_status()
     except HTTPError as http_err:
-        print(response.json())
+        logging.error(response.json())
         raise http_err
     except ConnectionError as conn_err:
-        print(response.json())
+        logging.error(response.json())
         raise conn_err
     except Timeout as timeout_err:
-        print(response.json())
+        logging.error(response.json())
         raise timeout_err
     except RequestException as req_err:
-        print(response.json())
+        logging.error(response.json())
         raise req_err
     return response.json()
 
@@ -58,7 +63,7 @@ def extract_response_data(response_json: str, call_type: str, cols_to_keep_: lis
     # Return the data in sorted format
     return sorted(data, key=lambda x: x['created'])
 
-def __main__():
+def main():
     df_transactions = pd.read_csv(PATH_TRANSACTIONS).set_index('transaction_id')
     # Start from the final transaction for which we have data already
     dt_start = df_transactions['tr_datetime'].max()
@@ -108,4 +113,4 @@ def __main__():
 
 
 if __name__ == '__main__':
-    __main__()
+    main()

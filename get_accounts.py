@@ -1,9 +1,8 @@
 from creds import creds
 from datetime import datetime
-import json
 from monzo.authentication import Authentication
 from monzo.endpoints.account import Account
-from monzo.exceptions import MonzoError
+# from monzo.exceptions import MonzoError
 import pytz
 
 creds = creds()
