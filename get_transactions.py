@@ -8,11 +8,13 @@ from requests.exceptions import HTTPError, ConnectionError, Timeout, RequestExce
 
 CREDS = get_creds()
 PATH_TRANSACTIONS = 'data/transactions_all.csv'
+
 # Set up API endpoint and access token
 endpoint = 'https://api.monzo.com/transactions'
 access_token = CREDS['access_token']
 token_expiry = datetime.fromtimestamp(CREDS['token_expiry'])
 logging.info(f'Token expires {token_expiry}')
+
 if token_expiry < datetime.now():
     logging.info(' Token expired: refreshing token...')
     refresh_token()
@@ -33,23 +35,14 @@ def call_endpoint(id_start_: str, creds: dict = CREDS) -> dict:
             headers={'Authorization': f'Bearer {access_token}'}
         )
         response.raise_for_status()
-    except HTTPError as http_err:
+    except Exception as err:
         logging.error(response.json())
-        raise http_err
-    except ConnectionError as conn_err:
-        logging.error(response.json())
-        raise conn_err
-    except Timeout as timeout_err:
-        logging.error(response.json())
-        raise timeout_err
-    except RequestException as req_err:
-        logging.error(response.json())
-        raise req_err
+        raise err
     return response.json()
 
 def extract_response_data(response_json: str, call_type: str, cols_to_keep_: list[str]) -> list[dict]:
     """
-    Takes in the bare respone json, extracts the list of data records,
+    Takes in the bare response json, extracts the list of data records,
     slims down by keeping only certain data columns.
 
     :call_type: type of data to be extracted, e.g. 'transactions'.

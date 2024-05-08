@@ -1,11 +1,11 @@
-from creds import creds
+from creds import get_creds
 from datetime import datetime
 from monzo.authentication import Authentication
 from monzo.endpoints.account import Account
 # from monzo.exceptions import MonzoError
 import pytz
 
-creds = creds()
+creds = get_creds()
 
 # Set up monzo session
 monzo = Authentication(
