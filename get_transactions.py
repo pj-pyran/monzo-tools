@@ -1,26 +1,20 @@
-from creds import get_creds, refresh_token
+from creds import get_creds, creds_check
 from datetime import datetime
 import logging
 import pandas as pd
 import requests
 from format_transactions import format_transactions, format_new_transactions
-from requests.exceptions import HTTPError, ConnectionError, Timeout, RequestException
+# from requests.exceptions import HTTPError, ConnectionError, Timeout, RequestException
+from logging_config import config_logging
 
 CREDS = get_creds()
 PATH_TRANSACTIONS = 'data/transactions_all.csv'
-
+if __name__ == '__main__':
+    # Pass filename to logging config
+    config_logging(__file__)
 # Set up API endpoint and access token
 endpoint = 'https://api.monzo.com/transactions'
-access_token = CREDS['access_token']
-token_expiry = datetime.fromtimestamp(CREDS['token_expiry'])
-logging.info(f'Token expires {token_expiry}')
-
-if token_expiry < datetime.now():
-    logging.info(' Token expired: refreshing token...')
-    refresh_token()
-    CREDS = get_creds()
-    token_expiry = datetime.fromtimestamp(CREDS['token_expiry'])
-    logging.info(f'Token refreshed. New token expires {token_expiry}')
+CREDS = creds_check()
 
 
 def call_endpoint(id_start_: str, creds: dict = CREDS) -> dict:
@@ -56,11 +50,21 @@ def extract_response_data(response_json: str, call_type: str, cols_to_keep_: lis
     # Return the data in sorted format
     return sorted(data, key=lambda x: x['created'])
 
-def main():
-    df_transactions = pd.read_csv(PATH_TRANSACTIONS).set_index('transaction_id')
-    # Start from the final transaction for which we have data already
-    dt_start = df_transactions['tr_datetime'].max()
-    id_start = df_transactions[df_transactions['tr_datetime']==dt_start].index[0]
+def main(refresh_type):
+    if refresh_type == 'full':
+        df_transactions = pd.DataFrame()
+        # The first transaction ever on my account
+        # This requires manual fetching through data export from the Monzo app.
+        id_start = 'tx_00009rSwKq5ZYItXdcApof'
+        # TODO: implement a full refresh here
+    elif refresh_type == 'incremental':
+        df_transactions = pd.read_csv(PATH_TRANSACTIONS).set_index('transaction_id')#.drop('index', axis=1)
+        # Start from the final transaction for which we have data already
+        dt_start = df_transactions['tr_datetime'].max()
+        id_start = df_transactions[df_transactions['tr_datetime']==dt_start].index[0]
+        df_transactions = df_transactions.reset_index()
+    else:
+        return None
 
     df_new_transactions = pd.DataFrame()
     cols_to_keep = [
@@ -99,11 +103,13 @@ def main():
         id_start = id_final
 
     # Ensure we've got everything in the right format
-    df_new_transactions = format_new_transactions(df_new_transactions)
-    df_transactions = pd.concat([df_transactions.reset_index(), df_new_transactions], ignore_index=True)
+    if len(df_new_transactions.index) > 0:
+        df_new_transactions = format_new_transactions(df_new_transactions)
+        df_transactions = pd.concat([df_transactions.reset_index(), df_new_transactions], ignore_index=True)
+    logging.info(f'Added {len(df_new_transactions.index)} new records')
     df_transactions = format_transactions(df_transactions)
     df_transactions.to_csv(PATH_TRANSACTIONS, index=False)
 
 
 if __name__ == '__main__':
-    main()
+    main('incremental')

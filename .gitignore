@@ -1,7 +1,8 @@
 *.csv
 *.txt
-*.ipynb
 *.xlsx
+*.log
 data/
 archive/
 __pycache__/
+creds.json

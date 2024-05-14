@@ -1,7 +1,7 @@
 from monzo.authentication import Authentication
-from creds import creds
+from creds import get_creds
 
-creds = creds()
+creds = get_creds()
 
 monzo = Authentication(
     client_id=creds['client_id'],

@@ -1,4 +1,10 @@
 [Knowledge assumed: intermediate]
+
+This package is intended for those with Monzo bank accounts, enabling them to analyse their financial history and understand their spending habits. I built it for my own use.
+
+The **goal** (in-progress) is to have Tableau reporting running on top.
+
+
 # Get started
 ## Prerequisites
 1. **Monzo standard account** - free and easy to sign up to. If you don't have one already, this package isn't really for you.
@@ -20,4 +26,13 @@ Now follow the 2-step process to get your access token:
 6. Your token in `creds.json` will now have been refreshed and you may run scripts at will. Token expires after around 30 hours.
 
 # How it works
-To understand this package, start from `cron_orchestrate.py`. I have this run daily (09:00) in order to keep data fresh and well-formatted to run analysis on demand.
+To understand this package, start from `cron_orchestrate.py`. This orchestrates the whole data refresh, transformation and enrichment. I have it run daily (09:00) in order to keep data fresh and well-formatted to run analysis on demand.
+
+In Tableau Public I am creating dashboards and tools to provide high-quality reports on the data retrieved by this package. This explains the purpose of `obfuscate_transactions.py`: for obvious reasons I don't want to upload my own financial data to Tableau Public. This file takes my private data and applies randomisation - I then use that data in the public-facing Tableau report.
+
+# Future iteration improvements
+In vague order of priority:
+
+- [ ] Migrating data to MySQL rather than CSVs
+- [ ] Better security for credentials (encryption)
+- [ ] Integrating other next-gen banking services (Starling, Revolut)

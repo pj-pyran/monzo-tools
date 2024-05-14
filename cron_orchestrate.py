@@ -1,26 +1,28 @@
-# Cron job which runs daily and orchestrates data processing.
-# Refresh token, pull down data, format it and enrich.
-# From there data is in a form for easy tracking and analysis.
-# Simple single-script execution when we want to on-demand reporting.
-
-from creds import refresh_token as refresh_token
+"""
+Cron job which runs daily and orchestrates data processing.
+Refresh token, pull down data, format it and enrich.
+From there data is in a form for easy tracking and analysis.
+Simple single-script execution when we want on-demand reporting.
+"""
+from logging_config import config_logging
+from creds import creds_check
 from datetime import datetime
+import enrich_transactions
 import get_transactions
 import logging
 
+config_logging(__file__)
+
 
 def daily_task():
-    logging.info('Running daily task at 09:00')
-    refresh_token()
-    get_transactions.main()
-
+    logging.info('Retrieving credentials...')
+    creds_check()
+    logging.info('Getting transactions...')
+    get_transactions.main('incremental')
+    logging.info('Enriching transactions...')
+    enrich_transactions.main()
 
 if __name__ == '__main__':
     logging.info('Job started')
-    current_time = datetime.now().time()
-
-    if current_time.hour == 9 and current_time.minute < 5:
-        daily_task()
-        logging.info('Job completed successfully')
-    else:
-        logging.warning(f'Job not run; cron ran at the wrong time')
+    daily_task()
+    logging.info('Job completed successfully')

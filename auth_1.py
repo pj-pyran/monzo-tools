@@ -1,11 +1,11 @@
-from creds import creds
+from creds import get_creds
 from monzo.authentication import Authentication
 # from monzo.exceptions import MonzoAuthenticationError, MonzoServerError
 import json
 from urllib.parse import parse_qs, urlparse
 
 PATH_CREDS = 'creds.json'
-creds = creds()
+creds = get_creds()
 
 # auth_url will contain state and code parameters
 # We'll parse them from the url
@@ -27,6 +27,6 @@ creds['access_token'] = monzo.access_token
 creds['token_expiry'] = monzo.access_token_expiry
 creds['refresh_token'] = monzo.refresh_token
 with open(PATH_CREDS, 'w') as json_file:
-    json.dump(creds, json_file)
+    json.dump(creds, json_file, indent=4)
 
-# Now authorise access in the Monzo app
+print('>> Now authorise access in the Monzo app')
